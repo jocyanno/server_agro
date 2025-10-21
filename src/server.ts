@@ -41,9 +41,7 @@ const app = fastify({
 // CORS Configuration
 app.register(cors, {
   origin: [
-    "http://localhost:3000",
-    "http://localhost:5000",
-    "http://localhost:8000"
+    "*",
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization", "x-api-key"]
@@ -70,7 +68,7 @@ app.register(fastifySwagger, {
       {
         url:
           NODE_ENV === "production"
-            ? "https://api.exemplo.com"
+            ? "https://serveragro-production.up.railway.app/"
             : `http://localhost:${PORT}`,
         description:
           NODE_ENV === "production"
