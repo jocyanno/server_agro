@@ -121,7 +121,8 @@ export class ApacService {
             gte: amanhaDate // Buscar registros de amanhã em diante (horário de Brasília)
           }
         },
-        orderBy: [{ data: "asc" }, { id: "desc" }] // Ordenar por data crescente (próximos dias primeiro)
+        orderBy: [{ data: "asc" }, { id: "desc" }], // Ordenar por data crescente (próximos dias primeiro)
+        take: 10 
       });
 
       console.log(
