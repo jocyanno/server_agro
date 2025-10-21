@@ -1,4 +1,10 @@
 import { prisma } from "../lib/prisma";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export interface DadosApacResponse {
   id: number;
@@ -98,21 +104,21 @@ export class ApacService {
     try {
       console.log("🔍 Buscando próximos 5 dias APAC...");
 
-      // Buscar registros futuros ordenados por data (mais próximo primeiro) e depois por ID (mais alto primeiro)
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0); // Zerar hora para comparar apenas a data
+      // Usar horário de Brasília para calcular "amanhã"
+      const agoraBrasilia = dayjs().tz("America/Sao_Paulo");
+      const amanhaBrasilia = agoraBrasilia.add(1, "day").startOf("day");
+      
+      // Converter para Date object para usar no Prisma
+      const amanhaDate = amanhaBrasilia.toDate();
 
-      // Calcular amanhã (próximo dia)
-      const amanha = new Date(hoje);
-      amanha.setDate(amanha.getDate() + 1);
-
-      console.log("📅 Hoje:", hoje.toISOString().split("T")[0]);
-      console.log("📅 Amanhã:", amanha.toISOString().split("T")[0]);
+      console.log("📅 Data/hora atual (Brasília):", agoraBrasilia.format("DD/MM/YYYY HH:mm:ss"));
+      console.log("📅 Amanhã (Brasília):", amanhaBrasilia.format("DD/MM/YYYY HH:mm:ss"));
+      console.log("📅 Amanhã (Date para filtro):", amanhaDate.toISOString());
 
       const registrosFuturos = await prisma.dadosApac.findMany({
         where: {
           data: {
-            gte: amanha // Buscar apenas registros de amanhã em diante
+            gte: amanhaDate // Buscar registros de amanhã em diante (horário de Brasília)
           }
         },
         orderBy: [{ data: "asc" }, { id: "desc" }] // Ordenar por data crescente (próximos dias primeiro)
