@@ -47,9 +47,17 @@ export class SeguradoraController {
         });
       }
 
+      // Serializar datas para JSON
+      const serializedSeguradora = {
+        ...seguradora,
+        dataHoraRegistro: seguradora.dataHoraRegistro.toISOString(),
+        createdAt: seguradora.createdAt?.toISOString(),
+        updatedAt: seguradora.updatedAt?.toISOString(),
+      };
+
       return reply.status(200).send({
         success: true,
-        data: seguradora
+        data: serializedSeguradora
       });
     } catch (error) {
       console.error("Erro no controller findById Seguradora:", error);
@@ -113,9 +121,30 @@ export class SeguradoraController {
 
       const result = await seguradoraService.findAll(filters);
 
+      // Serializar manualmente para garantir que os dados sejam enviados corretamente
+      const serializedData = result.data.map(item => ({
+        id: item.id,
+        numeroOcorrencia: item.numeroOcorrencia,
+        dataHoraRegistro: item.dataHoraRegistro.toISOString(),
+        tipoEvento: item.tipoEvento,
+        localizacao: item.localizacao,
+        descricaoInicial: item.descricaoInicial,
+        status: item.status,
+        documentacaoRecebida: item.documentacaoRecebida,
+        vistoriadorResponsavel: item.vistoriadorResponsavel,
+        conclusaoVistoria: item.conclusaoVistoria,
+        valorIndenizacao: item.valorIndenizacao,
+        createdAt: item.createdAt?.toISOString(),
+        updatedAt: item.updatedAt?.toISOString(),
+      }));
+
       return reply.status(200).send({
         success: true,
-        ...result
+        data: serializedData,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages
       });
     } catch (error) {
       console.error("Erro no controller findAll Seguradora:", error);
@@ -190,7 +219,7 @@ export class SeguradoraController {
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
       const stats = await seguradoraService.getStats();
-
+      
       return reply.status(200).send({
         success: true,
         data: stats
@@ -202,4 +231,5 @@ export class SeguradoraController {
       });
     }
   }
+
 }

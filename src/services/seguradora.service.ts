@@ -8,7 +8,7 @@ import {
 
 export class SeguradoraService {
   async create(data: CreateSeguradoraData): Promise<SeguradoraData> {
-    const seguradora = await (prisma as any).seguradora.create({
+    const seguradora = await prisma.seguradora.create({
       data: {
         ...data,
         documentacaoRecebida: data.documentacaoRecebida 
@@ -21,12 +21,15 @@ export class SeguradoraService {
       ...seguradora,
       documentacaoRecebida: seguradora.documentacaoRecebida 
         ? JSON.parse(seguradora.documentacaoRecebida) 
-        : null,
+        : undefined,
+      vistoriadorResponsavel: seguradora.vistoriadorResponsavel || undefined,
+      conclusaoVistoria: seguradora.conclusaoVistoria || undefined,
+      valorIndenizacao: seguradora.valorIndenizacao || undefined,
     };
   }
 
   async findById(id: string): Promise<SeguradoraData | null> {
-    const seguradora = await (prisma as any).seguradora.findUnique({
+    const seguradora = await prisma.seguradora.findUnique({
       where: { id },
     });
 
@@ -36,12 +39,15 @@ export class SeguradoraService {
       ...seguradora,
       documentacaoRecebida: seguradora.documentacaoRecebida 
         ? JSON.parse(seguradora.documentacaoRecebida) 
-        : null,
+        : undefined,
+      vistoriadorResponsavel: seguradora.vistoriadorResponsavel || undefined,
+      conclusaoVistoria: seguradora.conclusaoVistoria || undefined,
+      valorIndenizacao: seguradora.valorIndenizacao || undefined,
     };
   }
 
   async findByNumeroOcorrencia(numeroOcorrencia: number): Promise<SeguradoraData | null> {
-    const seguradora = await (prisma as any).seguradora.findUnique({
+    const seguradora = await prisma.seguradora.findUnique({
       where: { numeroOcorrencia },
     });
 
@@ -51,7 +57,10 @@ export class SeguradoraService {
       ...seguradora,
       documentacaoRecebida: seguradora.documentacaoRecebida 
         ? JSON.parse(seguradora.documentacaoRecebida) 
-        : null,
+        : undefined,
+      vistoriadorResponsavel: seguradora.vistoriadorResponsavel || undefined,
+      conclusaoVistoria: seguradora.conclusaoVistoria || undefined,
+      valorIndenizacao: seguradora.valorIndenizacao || undefined,
     };
   }
 
@@ -110,21 +119,36 @@ export class SeguradoraService {
     const skip = (page - 1) * limit;
 
     const [seguradoras, total] = await Promise.all([
-      (prisma as any).seguradora.findMany({
+      prisma.seguradora.findMany({
         where,
         skip,
         take: limit,
         orderBy: { dataHoraRegistro: 'desc' },
       }),
-      (prisma as any).seguradora.count({ where }),
+      prisma.seguradora.count({ where }),
     ]);
 
-    const data = seguradoras.map(seguradora => ({
-      ...seguradora,
-      documentacaoRecebida: seguradora.documentacaoRecebida 
-        ? JSON.parse(seguradora.documentacaoRecebida) 
-        : null,
-    }));
+    const data = seguradoras.map((seguradora) => {
+      const processedItem = {
+        id: seguradora.id,
+        numeroOcorrencia: seguradora.numeroOcorrencia,
+        dataHoraRegistro: seguradora.dataHoraRegistro,
+        tipoEvento: seguradora.tipoEvento,
+        localizacao: seguradora.localizacao,
+        descricaoInicial: seguradora.descricaoInicial,
+        status: seguradora.status,
+        documentacaoRecebida: seguradora.documentacaoRecebida 
+          ? JSON.parse(seguradora.documentacaoRecebida) 
+          : undefined,
+        vistoriadorResponsavel: seguradora.vistoriadorResponsavel || undefined,
+        conclusaoVistoria: seguradora.conclusaoVistoria || undefined,
+        valorIndenizacao: seguradora.valorIndenizacao || undefined,
+        createdAt: seguradora.createdAt,
+        updatedAt: seguradora.updatedAt,
+      };
+      
+      return processedItem;
+    });
 
     return {
       data,
@@ -142,7 +166,7 @@ export class SeguradoraService {
       updateData.documentacaoRecebida = JSON.stringify(data.documentacaoRecebida);
     }
 
-    const seguradora = await (prisma as any).seguradora.update({
+    const seguradora = await prisma.seguradora.update({
       where: { id },
       data: updateData,
     });
@@ -151,13 +175,16 @@ export class SeguradoraService {
       ...seguradora,
       documentacaoRecebida: seguradora.documentacaoRecebida 
         ? JSON.parse(seguradora.documentacaoRecebida) 
-        : null,
+        : undefined,
+      vistoriadorResponsavel: seguradora.vistoriadorResponsavel || undefined,
+      conclusaoVistoria: seguradora.conclusaoVistoria || undefined,
+      valorIndenizacao: seguradora.valorIndenizacao || undefined,
     };
   }
 
   async delete(id: string): Promise<boolean> {
     try {
-      await (prisma as any).seguradora.delete({
+      await prisma.seguradora.delete({
         where: { id },
       });
       return true;
@@ -190,22 +217,36 @@ export class SeguradoraService {
       }),
     ]);
 
+    console.log('📊 Stats - Raw data:', { total, statusStats, tipoEventoStats, valorTotal });
+    console.log('📊 Stats - statusStats detalhado:', JSON.stringify(statusStats, null, 2));
+    console.log('📊 Stats - tipoEventoStats detalhado:', JSON.stringify(tipoEventoStats, null, 2));
+
     const porStatus = statusStats.reduce((acc: Record<string, number>, item: any) => {
-      acc[item.status || 'Sem status'] = item._count;
+      // O Prisma retorna _count como um número direto quando usando groupBy
+      const count = typeof item._count === 'number' ? item._count : (item._count?._all || item._count?.status || 1);
+      console.log(`📊 Status: ${item.status} = ${count}`);
+      acc[item.status || 'Sem status'] = count;
       return acc;
     }, {});
 
     const porTipoEvento = tipoEventoStats.reduce((acc: Record<string, number>, item: any) => {
-      acc[item.tipoEvento] = item._count;
+      // O Prisma retorna _count como um número direto quando usando groupBy
+      const count = typeof item._count === 'number' ? item._count : (item._count?._all || item._count?.tipoEvento || 1);
+      console.log(`📊 Tipo Evento: ${item.tipoEvento} = ${count}`);
+      acc[item.tipoEvento] = count;
       return acc;
     }, {});
 
-    return {
+    const result = {
       total,
       porStatus,
       porTipoEvento,
       valorTotalIndenizacoes: valorTotal._sum.valorIndenizacao || 0,
     };
+
+    console.log('📊 Stats - Resultado final:', result);
+
+    return result;
   }
 }
 

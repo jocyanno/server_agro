@@ -4,7 +4,7 @@ import { SeguradoraController } from "../controllers/seguradora.controller";
 export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> {
   const seguradoraController = new SeguradoraController();
 
-  // Schema para criação
+  // Schema para criação - apenas validação de entrada
   const createSeguradoraSchema = {
     description: "Cria uma nova ocorrência de seguradora",
     summary: "Criar ocorrência",
@@ -54,28 +54,11 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
           description: "Valor da indenização"
         }
       }
-    },
-    response: {
-      201: {
-        description: "Ocorrência criada com sucesso",
-        type: "object",
-        properties: {
-          success: { type: "boolean" },
-          data: { type: "object" },
-          message: { type: "string" }
-        }
-      },
-      400: {
-        description: "Dados inválidos",
-        type: "object",
-        properties: {
-          error: { type: "string" }
-        }
-      }
     }
+    // Removendo response schema para evitar perda de dados
   };
 
-  // Schema para busca por ID
+  // Schema para busca por ID - apenas validação de entrada
   const findByIdSchema = {
     description: "Busca uma ocorrência por ID",
     summary: "Buscar por ID",
@@ -89,27 +72,11 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
         }
       },
       required: ["id"]
-    },
-    response: {
-      200: {
-        description: "Ocorrência encontrada",
-        type: "object",
-        properties: {
-          success: { type: "boolean" },
-          data: { type: "object" }
-        }
-      },
-      404: {
-        description: "Ocorrência não encontrada",
-        type: "object",
-        properties: {
-          error: { type: "string" }
-        }
-      }
     }
+    // Removendo response schema para evitar perda de dados
   };
 
-  // Schema para busca por número da ocorrência
+  // Schema para busca por número da ocorrência - apenas validação de entrada
   const findByNumeroSchema = {
     description: "Busca uma ocorrência por número",
     summary: "Buscar por número da ocorrência",
@@ -123,27 +90,11 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
         }
       },
       required: ["numeroOcorrencia"]
-    },
-    response: {
-      200: {
-        description: "Ocorrência encontrada",
-        type: "object",
-        properties: {
-          success: { type: "boolean" },
-          data: { type: "object" }
-        }
-      },
-      404: {
-        description: "Ocorrência não encontrada",
-        type: "object",
-        properties: {
-          error: { type: "string" }
-        }
-      }
     }
+    // Removendo response schema para evitar perda de dados
   };
 
-  // Schema para listagem com filtros
+  // Schema para listagem com filtros - apenas validação de entrada
   const findAllSchema = {
     description: "Lista ocorrências com filtros opcionais",
     summary: "Listar ocorrências",
@@ -160,8 +111,8 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
           description: "Tipo do evento"
         },
         status: {
-          type: "string",
-          enum: ["EM_ANALISE", "VISTORIA_AGENDADA", "VISTORIA_REALIZADA", "SINISTRO_CONFIRMADO", "SINISTRO_NAO_CONFIRMADO", "INDENIZACAO_PAGA", "ARQUIVADO"],
+          type: ["string", "null"],
+          enum: ["EM_ANALISE", "VISTORIA_AGENDADA", "VISTORIA_REALIZADA", "SINISTRO_CONFIRMADO", "SINISTRO_NAO_CONFIRMADO", "INDENIZACAO_PAGA", "ARQUIVADO", null, ""],
           description: "Status da ocorrência"
         },
         vistoriadorResponsavel: {
@@ -187,24 +138,11 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
           description: "Limite por página (padrão: 10)"
         }
       }
-    },
-    response: {
-      200: {
-        description: "Lista de ocorrências",
-        type: "object",
-        properties: {
-          success: { type: "boolean" },
-          data: { type: "array", items: { type: "object" } },
-          total: { type: "number" },
-          page: { type: "number" },
-          limit: { type: "number" },
-          totalPages: { type: "number" }
-        }
-      }
     }
+    // Removendo response schema para evitar perda de dados
   };
 
-  // Schema para atualização
+  // Schema para atualização - apenas validação de entrada
   const updateSchema = {
     description: "Atualiza uma ocorrência",
     summary: "Atualizar ocorrência",
@@ -262,28 +200,11 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
           description: "Valor da indenização"
         }
       }
-    },
-    response: {
-      200: {
-        description: "Ocorrência atualizada",
-        type: "object",
-        properties: {
-          success: { type: "boolean" },
-          data: { type: "object" },
-          message: { type: "string" }
-        }
-      },
-      404: {
-        description: "Ocorrência não encontrada",
-        type: "object",
-        properties: {
-          error: { type: "string" }
-        }
-      }
     }
+    // Removendo response schema para evitar perda de dados
   };
 
-  // Schema para exclusão
+  // Schema para exclusão - apenas validação de entrada
   const deleteSchema = {
     description: "Exclui uma ocorrência",
     summary: "Excluir ocorrência",
@@ -297,50 +218,11 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
         }
       },
       required: ["id"]
-    },
-    response: {
-      200: {
-        description: "Ocorrência excluída",
-        type: "object",
-        properties: {
-          success: { type: "boolean" },
-          message: { type: "string" }
-        }
-      },
-      404: {
-        description: "Ocorrência não encontrada",
-        type: "object",
-        properties: {
-          error: { type: "string" }
-        }
-      }
     }
+    // Removendo response schema para evitar perda de dados
   };
 
-  // Schema para estatísticas
-  const statsSchema = {
-    description: "Obtém estatísticas das ocorrências",
-    summary: "Estatísticas",
-    tags: ["Seguradora"],
-    response: {
-      200: {
-        description: "Estatísticas das ocorrências",
-        type: "object",
-        properties: {
-          success: { type: "boolean" },
-          data: {
-            type: "object",
-            properties: {
-              total: { type: "number" },
-              porStatus: { type: "object" },
-              porTipoEvento: { type: "object" },
-              valorTotalIndenizacoes: { type: "number" }
-            }
-          }
-        }
-      }
-    }
-  };
+  // Schema para estatísticas removido - causava perda de dados
 
   // Rotas
   fastify.post("/seguradora", {
@@ -368,6 +250,6 @@ export async function seguradoraRoutes(fastify: FastifyInstance): Promise<void> 
   }, seguradoraController.delete.bind(seguradoraController));
 
   fastify.get("/seguradora/stats/overview", {
-    schema: statsSchema
+    // Sem schema para evitar perda de dados nas estatísticas
   }, seguradoraController.getStats.bind(seguradoraController));
 }

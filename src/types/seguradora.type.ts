@@ -19,6 +19,8 @@ export interface SeguradoraData {
   vistoriadorResponsavel?: string;
   conclusaoVistoria?: string;
   valorIndenizacao?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface CreateSeguradoraData {
