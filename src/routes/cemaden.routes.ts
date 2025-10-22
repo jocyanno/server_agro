@@ -5,7 +5,7 @@ export async function cemadenRoutes(fastify: FastifyInstance): Promise<void> {
   const cemadenController = new CemadenController();
 
   const getChuvasAcumuladasSchema = {
-    description: "Obtém as chuvas acumuladas para uma estação específica",
+    description: "Obtém as chuvas acumuladas para uma estação específica. Se não informar datas, retorna todos os registros.",
     summary: "Obter chuvas acumuladas CEMADEN",
     tags: ["CEMADEN"],
     params: {
@@ -18,22 +18,42 @@ export async function cemadenRoutes(fastify: FastifyInstance): Promise<void> {
       },
       required: ["codEstacao"]
     },
+    querystring: {
+      type: "object",
+      properties: {
+        dataInicio: {
+          type: "string",
+          format: "date-time",
+          description: "Data e hora de início do período (formato ISO 8601: YYYY-MM-DDTHH:mm:ss)"
+        },
+        dataFim: {
+          type: "string",
+          format: "date-time",
+          description: "Data e hora de fim do período (formato ISO 8601: YYYY-MM-DDTHH:mm:ss)"
+        }
+      }
+    },
     response: {
       200: {
         description: "Dados de chuvas acumuladas",
         type: "object",
         properties: {
           success: { type: "boolean" },
+          total: { type: "number" },
           data: {
-            type: "object", properties: {
-              cod_estacao: { type: "string" },
-              snapshot_at: { type: "string", format: "date-time" },
-              chuva_24h: { type: "number" },
-              chuva_3d: { type: "number" },
-              chuva_7d: { type: "number" },
-              chuva_15d: { type: "number" },
-              chuva_30d: { type: "number" },
-              chuva_45d: { type: "number" }
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                cod_estacao: { type: "string" },
+                snapshot_at: { type: "string", format: "date-time" },
+                chuva_24h: { type: "number" },
+                chuva_3d: { type: "number" },
+                chuva_7d: { type: "number" },
+                chuva_15d: { type: "number" },
+                chuva_30d: { type: "number" },
+                chuva_45d: { type: "number" }
+              }
             }
           }
         }
@@ -64,4 +84,8 @@ export async function cemadenRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/cemaden/chuvas-acumuladas/:codEstacao", {
     schema: getChuvasAcumuladasSchema
   }, cemadenController.getChuvasAcumuladas.bind(cemadenController));
+
+  fastify.post("/cemaden/clean-corrupted-data", 
+    cemadenController.cleanCorruptedData.bind(cemadenController)
+  );
 }
