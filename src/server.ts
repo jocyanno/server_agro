@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import "dayjs/locale/pt-br";
-
+import multipart from '@fastify/multipart';
 import { registerRoutes } from "./routes/index.ts";
 import { runAutomation } from "./scripts/automate_apac";
 import { apacRoutes } from "./routes/apac.routes.ts";
@@ -31,12 +31,17 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 const app = fastify({
   logger: {
     level: "debug"
-  }
+  },
 });
 
 // ========================================
 // 🔌 PLUGINS E MIDDLEWARES
 // ========================================
+
+// Multipart Configuration
+app.register(multipart, {
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+})
 
 // CORS Configuration
 app.register(cors, {
@@ -105,6 +110,10 @@ app.register(fastifySwagger, {
         name: "APAC",
         description: "Endpoints para consulta de dados meteorológicos da APAC"
       },
+      {
+        name: "CEMADEN",
+        description: "Endpoints para importação de dados do CEMADEN e monitoramento"
+      }
     ]
   }
 });
