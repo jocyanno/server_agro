@@ -22,6 +22,30 @@ enum StatusOcorrencia {
   ARQUIVADO
 }
 
+enum StatusInicialAgro {
+  EM_ANALISE
+  VISTORIA_AGENDADA
+  VISTORIA_REALIZADA
+}
+
+enum StatusFinalAgro {
+  SINISTRO_CONFIRMADO
+  NAO_COBERTO
+  INDENIZACAO_PAGA
+  ARQUIVADO
+}
+
+enum EventoClimatico {
+  EXCESSO_CHUVA
+  SECA
+  GRANIZO
+  GEADA
+  VENDAVAL
+  INCENDIO
+  PRAGA
+  DOENCA
+}
+
 model Users {
   id        Int      @id @default(autoincrement())
   name      String?
@@ -82,4 +106,30 @@ model Seguradora {
   @@index([dataHoraRegistro])
   @@index([status])
   @@map("seguradora")
+}
+
+model OcorrenciaAgricola {
+  id                 String            @id @default(cuid())
+  numeroOcorrencia   Int               @unique @default(autoincrement())
+  produtor           String
+  codigoPropriedade  String
+  culturaAfetada     String
+  areaPlantada       Float
+  eventoClimatico    EventoClimatico
+  dataInicioEvento   DateTime
+  dataFimEvento      DateTime?
+  descricaoDano      String
+  percentualPerda    Int
+  statusInicial      StatusInicialAgro @default(EM_ANALISE)
+  statusFinal        StatusFinalAgro?
+  valorEstimadoPerda Float
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([numeroOcorrencia])
+  @@index([produtor])
+  @@index([statusInicial])
+  @@index([statusFinal])
+  @@index([eventoClimatico])
+  @@map("ocorrencia_agricola")
 }
