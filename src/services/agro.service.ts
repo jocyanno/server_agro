@@ -197,6 +197,16 @@ export class AgroService {
     console.log('📊 Calculando estatísticas das ocorrências agrícolas...');
 
     try {
+      // Verificar se o modelo existe no Prisma Client
+      const ocorrenciaModel = (prisma as any).ocorrenciaAgricola;
+      if (!ocorrenciaModel) {
+        console.error('❌ Modelo ocorrenciaAgricola não encontrado no Prisma Client');
+        console.error('💡 Execute: npx prisma generate');
+        throw new Error('Modelo ocorrenciaAgricola não está disponível. Execute: npx prisma generate');
+      }
+
+      console.log('✅ Modelo ocorrenciaAgricola encontrado, calculando estatísticas...');
+
       const [
         total,
         statusInicialStats,
@@ -205,12 +215,12 @@ export class AgroService {
         valorTotal,
         areaTotal,
       ] = await Promise.all([
-        (prisma as any).ocorrenciaAgricola.count(),
-        (prisma as any).ocorrenciaAgricola.groupBy({
+        ocorrenciaModel.count(),
+        ocorrenciaModel.groupBy({
           by: ['statusInicial'],
           _count: true,
         }),
-        (prisma as any).ocorrenciaAgricola.groupBy({
+        ocorrenciaModel.groupBy({
           by: ['statusFinal'],
           _count: true,
           where: {
@@ -219,12 +229,12 @@ export class AgroService {
             },
           },
         }),
-        (prisma as any).ocorrenciaAgricola.groupBy({
+        ocorrenciaModel.groupBy({
           by: ['eventoClimatico'],
           _count: true,
         }),
         // Somar apenas valores de perdas confirmadas e indenizações pagas
-        (prisma as any).ocorrenciaAgricola.aggregate({
+        ocorrenciaModel.aggregate({
           _sum: {
             valorEstimadoPerda: true,
           },
@@ -234,7 +244,7 @@ export class AgroService {
             },
           },
         }),
-        (prisma as any).ocorrenciaAgricola.aggregate({
+        ocorrenciaModel.aggregate({
           _sum: {
             areaPlantada: true,
           },

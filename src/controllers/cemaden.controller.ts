@@ -131,4 +131,22 @@ export class CemadenController {
       });
     }
   }
+
+  async getStationsWithData(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const stations = await cemadenService.getStationsWithData();
+
+      return reply.status(200).send({
+        success: true,
+        total: stations.length,
+        stations,
+      });
+    } catch (error) {
+      console.error('Erro no controller getStationsWithData CEMADEN:', error);
+
+      return reply.status(500).send({
+        error: 'Erro interno do servidor',
+      });
+    }
+  }
 }

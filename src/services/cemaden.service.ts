@@ -117,6 +117,16 @@ export class CemadenService {
         endDateValue = `now()`;
       }
 
+      // Limitar o período quando não há filtros para evitar timeout
+      // Se não há dataInicio, limitar para os últimos 90 dias
+      let limitDate = startDateValue;
+      if (!dataInicio) {
+        const limitDateObj = new Date();
+        limitDateObj.setDate(limitDateObj.getDate() - 90);
+        limitDate = `'${limitDateObj.toISOString()}'::timestamp`;
+        console.log(`⚠️ Sem filtro de data, limitando busca para últimos 90 dias`);
+      }
+
       const query = `
         WITH daily_data AS (
           SELECT 
@@ -125,7 +135,7 @@ export class CemadenService {
             SUM(valor_medida) AS mm_dia
           FROM dados_cemaden
           WHERE cod_estacao = $1
-            AND data >= ${startDateValue}
+            AND data >= ${limitDate}
             AND data <= ${endDateValue}
             AND valor_medida >= 0 
             AND valor_medida <= 1000
@@ -133,7 +143,7 @@ export class CemadenService {
         ),
         date_series AS (
           SELECT generate_series(
-            ${startDateValue},
+            ${limitDate},
             ${endDateValue},
             '1 day'::interval
           ) AS snapshot_date
@@ -151,6 +161,7 @@ export class CemadenService {
         LEFT JOIN daily_data dd ON dd.cod_estacao = $3
         GROUP BY ds.snapshot_date
         ORDER BY ds.snapshot_date DESC
+        LIMIT 100
       `;
 
       const rows = await prisma.$queryRawUnsafe<ChuvasAcumuladas[]>(
@@ -201,6 +212,59 @@ export class CemadenService {
     );
 
     return `Limpeza concluída. ${result} registros corrompidos removidos.`;
+  }
+
+  async getStationsWithData(): Promise<any[]> {
+    try {
+      // Busca estações únicas com seus dados mais recentes
+      const stations = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT DISTINCT ON (cod_estacao)
+          cod_estacao as codigo,
+          nome_estacao as nome,
+          uf,
+          lat,
+          lon,
+          data as datahora,
+          valor_medida as valor_medida
+        FROM dados_cemaden
+        WHERE cod_estacao IS NOT NULL
+          AND valor_medida >= 0 
+          AND valor_medida <= 1000
+        ORDER BY cod_estacao, data DESC
+      `);
+
+      // Formata os dados no formato esperado pelo frontend
+      const formattedStations = stations.map((station) => ({
+        station: {
+          codigo: station.codigo,
+          nome: station.nome || 'Estação sem nome',
+          tipo: 1, // Tipo padrão para CEMADEN
+        },
+        data: station.datahora
+          ? {
+              datahora: new Date(station.datahora).toISOString(),
+              precipitacao: {
+                acc1hr: null,
+                acc3hr: null,
+                acc6hr: null,
+                acc12hr: null,
+                acc24hr: station.valor_medida || null,
+                acc48hr: null,
+                acc72hr: null,
+                acc96hr: null,
+                acc120hr: null,
+              },
+              codibge: 0,
+              id_estacao: 0,
+            }
+          : null,
+      }));
+
+      return formattedStations;
+    } catch (error) {
+      console.error('❌ Erro ao buscar estações com dados:', error);
+      throw error;
+    }
   }
 }
 

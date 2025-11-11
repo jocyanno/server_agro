@@ -97,6 +97,11 @@ export async function cemadenRoutes(fastify: FastifyInstance): Promise<void> {
     cemadenController.cleanCorruptedData.bind(cemadenController),
   );
 
+  fastify.get(
+    '/cemaden/stations/with-data',
+    cemadenController.getStationsWithData.bind(cemadenController),
+  );
+
   const previsaoChuvaSchema = {
     description:
       'Gera previsão de chuva para o próximo mês baseada em análise histórica avançada',

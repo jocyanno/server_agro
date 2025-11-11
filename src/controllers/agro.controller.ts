@@ -205,7 +205,9 @@ export class AgroController {
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
+      console.log('📊 Controller: Iniciando busca de estatísticas do Agro...');
       const stats = await agroService.getStats();
+      console.log('✅ Controller: Estatísticas obtidas com sucesso');
 
       return reply.send({
         success: true,
@@ -213,11 +215,15 @@ export class AgroController {
       });
     } catch (error: any) {
       console.error('❌ Erro no controller ao buscar estatísticas:', error);
+      console.error('❌ Stack trace:', error.stack);
+      console.error('❌ Error name:', error.name);
+      console.error('❌ Error message:', error.message);
 
       return reply.status(500).send({
         success: false,
         error: error.message || 'Erro interno do servidor',
         message: 'Erro ao buscar estatísticas',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       });
     }
   }
