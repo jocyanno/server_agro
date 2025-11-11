@@ -23,7 +23,7 @@ async function main() {
     where: { email: 'jocyannovittor@hotmail.com' },
     update: {},
     create: {
-      name: 'João Cyannovittor',
+      name: 'Jocyanno',
       email: 'jocyannovittor@hotmail.com',
       password: hashedPassword,
       role: 'admin',
