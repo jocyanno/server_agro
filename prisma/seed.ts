@@ -1,24 +1,25 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
+declare const process: {
+  exit(code?: number): never;
+};
+
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando seed do banco de dados...');
+  console.log('Iniciando seed do banco de dados...');
   
   try {
-    // Testar conexão com o banco
     await prisma.$connect();
-    console.log('✅ Conexão com banco de dados estabelecida');
+    console.log('Conexão com banco de dados estabelecida');
   } catch (error) {
-    console.error('❌ Erro ao conectar com banco de dados:', error);
+    console.error('Erro ao conectar com banco de dados:', error);
     throw error;
   }
 
-  // Hash das senhas
   const hashedPassword = await bcrypt.hash('12345678', 10);
 
-  // Criar usuário admin
   const adminUser = await prisma.users.upsert({
     where: { email: 'jocyannovittor@hotmail.com' },
     update: {},
@@ -30,7 +31,6 @@ async function main() {
     },
   });
 
-  // Criar usuário comum
   const regularUser = await prisma.users.upsert({
     where: { email: 'rodrigo@hotmail.com' },
     update: {},
@@ -42,11 +42,10 @@ async function main() {
     },
   });
 
-  console.log('✅ Usuários criados:');
-  console.log(`👑 Admin: ${adminUser.email} (ID: ${adminUser.id})`);
-  console.log(`👤 User: ${regularUser.email} (ID: ${regularUser.id})`);
+  console.log('Usuários criados:');
+  console.log(`Admin: ${adminUser.email} (ID: ${adminUser.id})`);
+  console.log(`User: ${regularUser.email} (ID: ${regularUser.id})`);
 
-  // Criar dados de exemplo para Seguradora
   const seguradoraData = [
     {
       dataHoraRegistro: new Date('2024-01-15T10:30:00Z'),
@@ -105,7 +104,7 @@ async function main() {
     }
   ];
 
-  console.log('🌱 Criando dados de exemplo para Seguradora...');
+  console.log('Criando dados de exemplo para Seguradora...');
 
   for (const data of seguradoraData) {
     const seguradora = await prisma.seguradora.create({
@@ -122,15 +121,15 @@ async function main() {
       }
     });
 
-    console.log(`📋 Ocorrência #${seguradora.numeroOcorrencia} criada - ${data.tipoEvento} (${data.status})`);
+    console.log(`Ocorrência #${seguradora.numeroOcorrencia} criada - ${data.tipoEvento} (${data.status})`);
   }
 
-  console.log('✅ Seed concluído com sucesso!');
+  console.log('Seed concluído com sucesso!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Erro no seed:', e);
+    console.error('Erro no seed:', e);
     process.exit(1);
   })
   .finally(async () => {
