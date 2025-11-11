@@ -10,6 +10,9 @@ import multipart from '@fastify/multipart';
 import { registerRoutes } from "./routes/index.ts";
 import { runAutomation } from "./scripts/automate_apac";
 import { apacRoutes } from "./routes/apac.routes.ts";
+import { CemadenScheduler } from "./scripts/cemaden/cemaden-scheduler";
+import { runCemadenDataCollection } from "./scripts/cemaden/cemaden-data";
+import { runCemadenStationsCollection } from "./scripts/cemaden/cemaden-stations";
 
 // ========================================
 // 🔧 CONFIGURAÇÕES GLOBAIS
@@ -200,6 +203,30 @@ async function runInitialDataCollection(): Promise<void> {
   }
 }
 
+async function startCemadenScheduler(): Promise<void> {
+  console.log("📡 Iniciando scheduler do CEMADEN...");
+  
+  try {
+    // Executar coleta inicial de estações e dados
+    console.log("🔄 Executando coleta inicial do CEMADEN...");
+    await Promise.allSettled([
+      runCemadenStationsCollection(),
+      runCemadenDataCollection()
+    ]);
+    console.log("✅ Coleta inicial do CEMADEN concluída");
+    
+    // Iniciar coleta de dados a cada 3 minutos
+    CemadenScheduler.startDataCollection();
+    console.log("✅ Scheduler de dados do CEMADEN iniciado (executa a cada 3 minutos)");
+    
+    // Iniciar coleta de estações uma vez por dia às 00:00
+    CemadenScheduler.startStationsCollection();
+    console.log("✅ Scheduler de estações do CEMADEN iniciado (executa diariamente às 00:00)");
+  } catch (error) {
+    console.error("❌ Erro ao iniciar scheduler do CEMADEN:", error);
+  }
+}
+
 // Handler para erros não capturados
 process.on("uncaughtException", (error) => {
   console.error("💥 Erro não capturado:", error);
@@ -214,12 +241,14 @@ process.on("unhandledRejection", (reason, promise) => {
 // Graceful shutdown
 process.on("SIGTERM", async () => {
   console.log("🛑 Recebido SIGTERM, encerrando servidor...");
+  CemadenScheduler.stopAll();
   await app.close();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("🛑 Recebido SIGINT, encerrando servidor...");
+  CemadenScheduler.stopAll();
   await app.close();
   process.exit(0);
 });
@@ -240,6 +269,7 @@ async function startServer(): Promise<void> {
 
     if (NODE_ENV !== "test") {
       await runInitialDataCollection();
+      await startCemadenScheduler();
     }
   } catch (error) {
     console.error("💥 Erro ao iniciar servidor:", error);

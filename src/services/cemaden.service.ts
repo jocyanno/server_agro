@@ -216,22 +216,39 @@ export class CemadenService {
 
   async getStationsWithData(): Promise<any[]> {
     try {
-      // Busca estações únicas com seus dados mais recentes
-      const stations = await prisma.$queryRawUnsafe<any[]>(`
-        SELECT DISTINCT ON (cod_estacao)
-          cod_estacao as codigo,
-          nome_estacao as nome,
-          uf,
-          lat,
-          lon,
-          data as datahora,
-          valor_medida as valor_medida
-        FROM dados_cemaden
-        WHERE cod_estacao IS NOT NULL
-          AND valor_medida >= 0 
-          AND valor_medida <= 1000
-        ORDER BY cod_estacao, data DESC
-      `);
+      // Importar config para obter estações configuradas
+      const { config } = await import('../config/env');
+      const configuredStations = config.cemaden.stations.map(s => s.codestacao);
+      
+      // Criar placeholders para os parâmetros ($1, $2, etc.)
+      const placeholders = configuredStations.map((_, index) => `$${index + 1}`).join(', ');
+
+      // Busca estações únicas com seus dados mais recentes da tabela dados_cemaden_stations
+      // Faz JOIN com a tabela estacoes para obter o nome
+      const stations = await prisma.$queryRawUnsafe<any[]>(
+        `
+        SELECT DISTINCT ON (d.codestacao)
+          d.codestacao as codigo,
+          COALESCE(e.nome, 'Estação sem nome') as nome,
+          d.datahora,
+          d.acc1hr,
+          d.acc3hr,
+          d.acc6hr,
+          d.acc12hr,
+          d.acc24hr,
+          d.acc48hr,
+          d.acc72hr,
+          d.acc96hr,
+          d.acc120hr,
+          d.codibge,
+          d.id_estacao
+        FROM dados_cemaden_stations d
+        LEFT JOIN estacoes e ON d.codestacao = e.codestacao
+        WHERE d.codestacao IN (${placeholders})
+        ORDER BY d.codestacao, d.datahora DESC
+      `,
+        ...configuredStations
+      );
 
       // Formata os dados no formato esperado pelo frontend
       const formattedStations = stations.map((station) => ({
@@ -244,18 +261,18 @@ export class CemadenService {
           ? {
               datahora: new Date(station.datahora).toISOString(),
               precipitacao: {
-                acc1hr: null,
-                acc3hr: null,
-                acc6hr: null,
-                acc12hr: null,
-                acc24hr: station.valor_medida || null,
-                acc48hr: null,
-                acc72hr: null,
-                acc96hr: null,
-                acc120hr: null,
+                acc1hr: station.acc1hr,
+                acc3hr: station.acc3hr,
+                acc6hr: station.acc6hr,
+                acc12hr: station.acc12hr,
+                acc24hr: station.acc24hr,
+                acc48hr: station.acc48hr,
+                acc72hr: station.acc72hr,
+                acc96hr: station.acc96hr,
+                acc120hr: station.acc120hr,
               },
-              codibge: 0,
-              id_estacao: 0,
+              codibge: station.codibge || 0,
+              id_estacao: station.id_estacao || 0,
             }
           : null,
       }));

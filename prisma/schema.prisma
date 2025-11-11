@@ -133,3 +133,35 @@ model OcorrenciaAgricola {
   @@index([eventoClimatico])
   @@map("ocorrencia_agricola")
 }
+
+model Estacoes {
+  id             Int      @id @default(autoincrement())
+  codestacao     String   @unique
+  id_tipoestacao Int
+  nome           String
+  createdAt      DateTime @default(now())
+
+  @@map("estacoes")
+}
+
+model DadosCemadenStations {
+  id         Int      @id @default(autoincrement())
+  acc120hr   Float?
+  acc12hr    Float?
+  acc1hr     Float?
+  acc24hr    Float?
+  acc3hr     Float?
+  acc48hr    Float?
+  acc6hr     Float?
+  acc72hr    Float?
+  acc96hr    Float?
+  codestacao String
+  codibge    Int
+  datahora   DateTime
+  id_estacao Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([codestacao, datahora])
+  @@map("dados_cemaden_stations")
+}
