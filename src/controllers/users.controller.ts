@@ -286,9 +286,44 @@ export class UsersController {
    */
   async getProfile(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userPayload = request.user as { id: number; email: string };
+      console.log('getProfile - Iniciando...');
+      console.log('getProfile - request.user:', request.user);
+      console.log('getProfile - request.headers.authorization:', request.headers.authorization);
+      
+      let userPayload: { id: number; email: string } | null = null;
+      
+      if (request.user) {
+        userPayload = request.user as { id: number; email: string };
+        console.log('getProfile - userPayload do request.user:', userPayload);
+      } else {
+        try {
+          const authHeader = request.headers.authorization;
+          if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            const decoded = request.server.jwt.decode(token) as { id: number; email: string } | null;
+            if (decoded) {
+              userPayload = decoded;
+              console.log('getProfile - userPayload do jwt.decode:', userPayload);
+            }
+          }
+        } catch (decodeError: any) {
+          console.error('Erro ao decodificar JWT:', decodeError);
+          console.error('Stack trace:', decodeError.stack);
+        }
+      }
+      
+      if (!userPayload || !userPayload.id) {
+        console.error('getProfile - userPayload.id está undefined ou inválido');
+        console.error('getProfile - userPayload completo:', userPayload);
+        return reply.status(401).send({
+          success: false,
+          error: "Token inválido: dados do usuário não encontrados"
+        });
+      }
 
+      console.log('getProfile - Buscando usuário com ID:', userPayload.id);
       const user = await usersService.getUserById(userPayload.id);
+      console.log('getProfile - Usuário encontrado:', user);
 
       return reply.status(200).send({
         success: true,
@@ -296,15 +331,20 @@ export class UsersController {
       });
     } catch (error: any) {
       console.error("Erro no controller getProfile:", error);
+      console.error("Stack trace:", error.stack);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
 
       if (error.message === "Usuário não encontrado") {
         return reply.status(404).send({
+          success: false,
           error: error.message
         });
       }
 
       return reply.status(500).send({
-        error: "Erro interno do servidor"
+        success: false,
+        error: error.message || "Erro interno do servidor"
       });
     }
   }

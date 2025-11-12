@@ -160,8 +160,11 @@ export async function usersRoutes(fastify: FastifyInstance) {
       preHandler: async (request, reply) => {
         try {
           await request.jwtVerify();
-        } catch (err) {
-          reply.send(err);
+        } catch (err: any) {
+          return reply.status(401).send({
+            success: false,
+            error: err.message || "Token inválido ou expirado"
+          });
         }
       }
     },
@@ -198,9 +201,22 @@ export async function usersRoutes(fastify: FastifyInstance) {
       },
       preHandler: async (request, reply) => {
         try {
+          const authHeader = request.headers.authorization;
+          console.log('Authorization header:', authHeader);
+          
           await request.jwtVerify();
-        } catch (err) {
-          reply.send(err);
+          
+          console.log('JWT verificado com sucesso');
+          console.log('request.user:', request.user);
+          console.log('request.user type:', typeof request.user);
+          console.log('request.user keys:', request.user ? Object.keys(request.user) : 'null');
+        } catch (err: any) {
+          console.error('Erro ao verificar JWT:', err.message);
+          console.error('Stack trace:', err.stack);
+          return reply.status(401).send({
+            success: false,
+            error: err.message || "Token inválido ou expirado"
+          });
         }
       }
     },
@@ -244,8 +260,11 @@ export async function usersRoutes(fastify: FastifyInstance) {
       preHandler: async (request, reply) => {
         try {
           await request.jwtVerify();
-        } catch (err) {
-          reply.send(err);
+        } catch (err: any) {
+          return reply.status(401).send({
+            success: false,
+            error: err.message || "Token inválido ou expirado"
+          });
         }
       }
     },
@@ -287,8 +306,11 @@ export async function usersRoutes(fastify: FastifyInstance) {
       preHandler: async (request, reply) => {
         try {
           await request.jwtVerify();
-        } catch (err) {
-          reply.send(err);
+        } catch (err: any) {
+          return reply.status(401).send({
+            success: false,
+            error: err.message || "Token inválido ou expirado"
+          });
         }
       }
     },
@@ -333,8 +355,11 @@ export async function usersRoutes(fastify: FastifyInstance) {
       preHandler: async (request, reply) => {
         try {
           await request.jwtVerify();
-        } catch (err) {
-          reply.send(err);
+        } catch (err: any) {
+          return reply.status(401).send({
+            success: false,
+            error: err.message || "Token inválido ou expirado"
+          });
         }
       }
     },
@@ -376,8 +401,11 @@ export async function usersRoutes(fastify: FastifyInstance) {
       preHandler: async (request, reply) => {
         try {
           await request.jwtVerify();
-        } catch (err) {
-          reply.send(err);
+        } catch (err: any) {
+          return reply.status(401).send({
+            success: false,
+            error: err.message || "Token inválido ou expirado"
+          });
         }
       }
     },

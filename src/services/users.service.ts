@@ -86,8 +86,11 @@ export class UsersService {
       }
 
       return user;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao buscar usuário:", error);
+      console.error("Stack trace:", error.stack);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
       throw error;
     }
   }

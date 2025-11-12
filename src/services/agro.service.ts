@@ -11,20 +11,21 @@ export class AgroService {
   async create(
     data: CreateOcorrenciaAgricolaData,
   ): Promise<OcorrenciaAgricolaData> {
-    console.log('🌾 Criando nova ocorrência agrícola:', data);
+    console.log('Criando nova ocorrência agrícola:', data);
 
     try {
-      const ocorrencia = await (prisma as any).ocorrenciaAgricola.create({
+      const ocorrencia = await prisma.ocorrenciaAgricola.create({
         data: {
           ...data,
           statusInicial: data.statusInicial || 'EM_ANALISE',
         },
       });
 
-      console.log('✅ Ocorrência agrícola criada com sucesso:', ocorrencia);
+      console.log('Ocorrência agrícola criada com sucesso:', ocorrencia);
       return ocorrencia;
-    } catch (error) {
-      console.error('❌ Erro ao criar ocorrência agrícola:', error);
+    } catch (error: any) {
+      console.error('Erro ao criar ocorrência agrícola:', error);
+      console.error('Stack trace:', error.stack);
       throw error;
     }
   }
@@ -36,7 +37,7 @@ export class AgroService {
     limit: number;
     totalPages: number;
   }> {
-    console.log('🔍 Buscando ocorrências agrícolas com filtros:', filters);
+    console.log('Buscando ocorrências agrícolas com filtros:', filters);
 
     const page = filters?.page || 1;
     const limit = filters?.limit || 10;
@@ -86,7 +87,7 @@ export class AgroService {
 
     try {
       const [ocorrencias, total] = await Promise.all([
-        (prisma as any).ocorrenciaAgricola.findMany({
+        prisma.ocorrenciaAgricola.findMany({
           where,
           skip,
           take: limit,
@@ -94,13 +95,13 @@ export class AgroService {
             numeroOcorrencia: 'desc',
           },
         }),
-        (prisma as any).ocorrenciaAgricola.count({ where }),
+        prisma.ocorrenciaAgricola.count({ where }),
       ]);
 
       const totalPages = Math.ceil(total / limit);
 
       console.log(
-        `✅ Encontradas ${ocorrencias.length} ocorrências de ${total} total`,
+        `Encontradas ${ocorrencias.length} ocorrências de ${total} total`,
       );
 
       return {
@@ -110,50 +111,55 @@ export class AgroService {
         limit,
         totalPages,
       };
-    } catch (error) {
-      console.error('❌ Erro ao buscar ocorrências agrícolas:', error);
+    } catch (error: any) {
+      console.error('Erro ao buscar ocorrências agrícolas:', error);
+      console.error('Stack trace:', error.stack);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
       throw error;
     }
   }
 
   async findById(id: string): Promise<OcorrenciaAgricolaData | null> {
-    console.log('🔍 Buscando ocorrência agrícola por ID:', id);
+    console.log('Buscando ocorrência agrícola por ID:', id);
 
     try {
-      const ocorrencia = await (prisma as any).ocorrenciaAgricola.findUnique({
+      const ocorrencia = await prisma.ocorrenciaAgricola.findUnique({
         where: { id },
       });
 
       if (!ocorrencia) {
-        console.log('❌ Ocorrência agrícola não encontrada');
+        console.log('Ocorrência agrícola não encontrada');
         return null;
       }
 
-      console.log('✅ Ocorrência agrícola encontrada:', ocorrencia);
+      console.log('Ocorrência agrícola encontrada:', ocorrencia);
       return ocorrencia;
-    } catch (error) {
-      console.error('❌ Erro ao buscar ocorrência agrícola:', error);
+    } catch (error: any) {
+      console.error('Erro ao buscar ocorrência agrícola:', error);
+      console.error('Stack trace:', error.stack);
       throw error;
     }
   }
 
   async findByNumero(numero: number): Promise<OcorrenciaAgricolaData | null> {
-    console.log('🔍 Buscando ocorrência agrícola por número:', numero);
+    console.log('Buscando ocorrência agrícola por número:', numero);
 
     try {
-      const ocorrencia = await (prisma as any).ocorrenciaAgricola.findUnique({
+      const ocorrencia = await prisma.ocorrenciaAgricola.findUnique({
         where: { numeroOcorrencia: numero },
       });
 
       if (!ocorrencia) {
-        console.log('❌ Ocorrência agrícola não encontrada');
+        console.log('Ocorrência agrícola não encontrada');
         return null;
       }
 
-      console.log('✅ Ocorrência agrícola encontrada:', ocorrencia);
+      console.log('Ocorrência agrícola encontrada:', ocorrencia);
       return ocorrencia;
-    } catch (error) {
-      console.error('❌ Erro ao buscar ocorrência agrícola:', error);
+    } catch (error: any) {
+      console.error('Erro ao buscar ocorrência agrícola:', error);
+      console.error('Stack trace:', error.stack);
       throw error;
     }
   }
@@ -162,51 +168,43 @@ export class AgroService {
     id: string,
     data: UpdateOcorrenciaAgricolaData,
   ): Promise<OcorrenciaAgricolaData> {
-    console.log('✏️ Atualizando ocorrência agrícola:', id, data);
+    console.log('Atualizando ocorrência agrícola:', id, data);
 
     try {
-      const ocorrencia = await (prisma as any).ocorrenciaAgricola.update({
+      const ocorrencia = await prisma.ocorrenciaAgricola.update({
         where: { id },
         data,
       });
 
-      console.log('✅ Ocorrência agrícola atualizada com sucesso:', ocorrencia);
+      console.log('Ocorrência agrícola atualizada com sucesso:', ocorrencia);
       return ocorrencia;
-    } catch (error) {
-      console.error('❌ Erro ao atualizar ocorrência agrícola:', error);
+    } catch (error: any) {
+      console.error('Erro ao atualizar ocorrência agrícola:', error);
+      console.error('Stack trace:', error.stack);
       throw error;
     }
   }
 
   async delete(id: string): Promise<void> {
-    console.log('🗑️ Deletando ocorrência agrícola:', id);
+    console.log('Deletando ocorrência agrícola:', id);
 
     try {
-      await (prisma as any).ocorrenciaAgricola.delete({
+      await prisma.ocorrenciaAgricola.delete({
         where: { id },
       });
 
-      console.log('✅ Ocorrência agrícola deletada com sucesso');
-    } catch (error) {
-      console.error('❌ Erro ao deletar ocorrência agrícola:', error);
+      console.log('Ocorrência agrícola deletada com sucesso');
+    } catch (error: any) {
+      console.error('Erro ao deletar ocorrência agrícola:', error);
+      console.error('Stack trace:', error.stack);
       throw error;
     }
   }
 
   async getStats(): Promise<OcorrenciaAgricolaStats> {
-    console.log('📊 Calculando estatísticas das ocorrências agrícolas...');
+    console.log('Calculando estatísticas das ocorrências agrícolas...');
 
     try {
-      // Verificar se o modelo existe no Prisma Client
-      const ocorrenciaModel = (prisma as any).ocorrenciaAgricola;
-      if (!ocorrenciaModel) {
-        console.error('❌ Modelo ocorrenciaAgricola não encontrado no Prisma Client');
-        console.error('💡 Execute: npx prisma generate');
-        throw new Error('Modelo ocorrenciaAgricola não está disponível. Execute: npx prisma generate');
-      }
-
-      console.log('✅ Modelo ocorrenciaAgricola encontrado, calculando estatísticas...');
-
       const [
         total,
         statusInicialStats,
@@ -215,12 +213,12 @@ export class AgroService {
         valorTotal,
         areaTotal,
       ] = await Promise.all([
-        ocorrenciaModel.count(),
-        ocorrenciaModel.groupBy({
+        prisma.ocorrenciaAgricola.count(),
+        prisma.ocorrenciaAgricola.groupBy({
           by: ['statusInicial'],
           _count: true,
         }),
-        ocorrenciaModel.groupBy({
+        prisma.ocorrenciaAgricola.groupBy({
           by: ['statusFinal'],
           _count: true,
           where: {
@@ -229,12 +227,11 @@ export class AgroService {
             },
           },
         }),
-        ocorrenciaModel.groupBy({
+        prisma.ocorrenciaAgricola.groupBy({
           by: ['eventoClimatico'],
           _count: true,
         }),
-        // Somar apenas valores de perdas confirmadas e indenizações pagas
-        ocorrenciaModel.aggregate({
+        prisma.ocorrenciaAgricola.aggregate({
           _sum: {
             valorEstimadoPerda: true,
           },
@@ -244,14 +241,14 @@ export class AgroService {
             },
           },
         }),
-        ocorrenciaModel.aggregate({
+        prisma.ocorrenciaAgricola.aggregate({
           _sum: {
             areaPlantada: true,
           },
         }),
       ]);
 
-      console.log('📊 Stats - Raw data:', {
+      console.log('Stats - Raw data:', {
         total,
         statusInicialStats,
         statusFinalStats,
@@ -266,7 +263,7 @@ export class AgroService {
             typeof item._count === 'number'
               ? item._count
               : item._count?._all || item._count?.statusInicial || 1;
-          console.log(`📊 Status Inicial: ${item.statusInicial} = ${count}`);
+          console.log(`Status Inicial: ${item.statusInicial} = ${count}`);
           acc[item.statusInicial || 'Sem status'] = count;
           return acc;
         },
@@ -279,7 +276,7 @@ export class AgroService {
             typeof item._count === 'number'
               ? item._count
               : item._count?._all || item._count?.statusFinal || 1;
-          console.log(`📊 Status Final: ${item.statusFinal} = ${count}`);
+          console.log(`Status Final: ${item.statusFinal} = ${count}`);
           acc[item.statusFinal || 'Sem status'] = count;
           return acc;
         },
@@ -293,7 +290,7 @@ export class AgroService {
               ? item._count
               : item._count?._all || item._count?.eventoClimatico || 1;
           console.log(
-            `📊 Evento Climático: ${item.eventoClimatico} = ${count}`,
+            `Evento Climático: ${item.eventoClimatico} = ${count}`,
           );
           acc[item.eventoClimatico] = count;
           return acc;
@@ -310,11 +307,14 @@ export class AgroService {
         areaAfetadaTotal: areaTotal._sum.areaPlantada || 0,
       };
 
-      console.log('📊 Stats - Resultado final:', result);
+      console.log('Stats - Resultado final:', result);
 
       return result;
-    } catch (error) {
-      console.error('❌ Erro ao calcular estatísticas:', error);
+    } catch (error: any) {
+      console.error('Erro ao calcular estatísticas:', error);
+      console.error('Stack trace:', error.stack);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
       throw error;
     }
   }

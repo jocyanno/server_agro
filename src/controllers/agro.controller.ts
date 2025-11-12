@@ -29,7 +29,7 @@ export class AgroController {
         message: 'Ocorrência agrícola criada com sucesso',
       });
     } catch (error: any) {
-      console.error('❌ Erro no controller ao criar ocorrência:', error);
+      console.error('Erro no controller ao criar ocorrência:', error);
 
       return reply.status(500).send({
         success: false,
@@ -65,7 +65,7 @@ export class AgroController {
         ...result,
       });
     } catch (error: any) {
-      console.error('❌ Erro no controller ao buscar ocorrências:', error);
+      console.error('Erro no controller ao buscar ocorrências:', error);
 
       return reply.status(500).send({
         success: false,
@@ -158,7 +158,7 @@ export class AgroController {
         message: 'Ocorrência agrícola atualizada com sucesso',
       });
     } catch (error: any) {
-      console.error('❌ Erro no controller ao atualizar ocorrência:', error);
+      console.error('Erro no controller ao atualizar ocorrência:', error);
 
       if (error.code === 'P2025') {
         return reply.status(404).send({
@@ -186,7 +186,7 @@ export class AgroController {
         message: 'Ocorrência agrícola deletada com sucesso',
       });
     } catch (error: any) {
-      console.error('❌ Erro no controller ao deletar ocorrência:', error);
+      console.error('Erro no controller ao deletar ocorrência:', error);
 
       if (error.code === 'P2025') {
         return reply.status(404).send({
@@ -205,19 +205,19 @@ export class AgroController {
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
-      console.log('📊 Controller: Iniciando busca de estatísticas do Agro...');
+      console.log('Controller: Iniciando busca de estatísticas do Agro...');
       const stats = await agroService.getStats();
-      console.log('✅ Controller: Estatísticas obtidas com sucesso');
+      console.log('Controller: Estatísticas obtidas com sucesso');
 
       return reply.send({
         success: true,
         data: stats,
       });
     } catch (error: any) {
-      console.error('❌ Erro no controller ao buscar estatísticas:', error);
-      console.error('❌ Stack trace:', error.stack);
-      console.error('❌ Error name:', error.name);
-      console.error('❌ Error message:', error.message);
+      console.error('Erro no controller ao buscar estatísticas:', error);
+      console.error('Stack trace:', error.stack);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
 
       return reply.status(500).send({
         success: false,
